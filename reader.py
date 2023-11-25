@@ -1,10 +1,11 @@
 import cv2
 import numpy as np
 
-#video_path = 'output_video.mp4'
+video_path = 'output_video.mp4'
 #video_path = 'compressed_video.mp4'
-video_path = './videos/test144.mp4'
+#video_path = './videos/test144.mp4'
 
+pixel_scale = 32
 
 cap = cv2.VideoCapture(video_path)
 
@@ -14,35 +15,35 @@ if not cap.isOpened():
 
 
 letter_color_dict = {
-    ',': (190, 20, 50),
-    '.': (50, 250, 100),
-    ' ': (0, 0, 0),      # Black
-    'a': (0, 0, 255),    # Red
-    'b': (0, 255, 0),    # Green
-    'c': (255, 0, 0),    # Blue
-    'd': (255, 255, 0),  # Yellow
-    'e': (255, 0, 255),  # Magenta
-    'f': (0, 255, 255),  # Cyan
-    'g': (128, 128, 128),  # Gray
-    'h': (192, 192, 192),  # Silver
-    'i': (128, 0, 0),    # Maroon
-    'j': (0, 128, 0),    # Olive
-    'k': (0, 128, 128),  # Teal
-    'l': (128, 0, 128),  # Purple
-    'm': (255, 165, 0),  # Orange
-    'n': (0, 0, 128),    # Navy
-    'o': (255, 192, 203),  # Pink
-    'p': (0, 50, 128),  # Aqua
-    'q': (255, 99, 71),   # Tomato
-    'r': (0, 255, 127),   # SpringGreen
-    's': (218, 112, 214),  # Orchid
-    't': (173, 216, 230),  # LightBlue
-    'u': (255, 228, 196),  # Bisque
-    'v': (154, 205, 50),   # YellowGreen
-    'w': (244, 164, 96),   # SandyBrown
-    'x': (0, 200, 0),        
-    'y': (255, 255, 255),  # White
-    'z': (128, 128, 0),    # OliveDrab
+    ',': (255, 0, 0),      # Red
+    '.': (0, 255, 0),      # Green
+    ' ': (0, 0, 0),  # White
+    'a': (255, 0, 255),    # Magenta
+    'b': (0, 0, 255),      # Blue
+    'c': (0, 150, 255),    # Cyan
+    'd': (128, 0, 128),    # Purple
+    'e': (255, 140, 0),    # Orange
+    'f': (255, 255, 0),    # Yellow
+    'g': (128, 128, 0),    # OliveDrab
+    'h': (0, 128, 25),      # Green
+    'i': (154, 205, 50),   # YellowGreen
+    'j': (173, 216, 230),  # LightBlue
+    'k': (255, 228, 196),  # Bisque
+    'l': (255, 192, 203),  # Pink
+    'm': (240, 30, 0),      # Red
+    'n': (218, 112, 214),  # Orchid
+    'o': (0, 128, 128),    # Teal
+    'p': (0, 255, 255),    # Cyan
+    'q': (255, 99, 71),    # Tomato
+    'r': (0, 255, 127),    # SpringGreen
+    's': (244, 164, 96),   # SandyBrown
+    't': (190, 20, 50),    # Crimson
+    'u': (128, 77, 25),      # Maroon
+    'v': (50, 0, 128),      # Navy
+    'w': (255, 255, 255),      # Lime
+    'x': (192, 192, 192),  # Silver
+    'y': (150, 255, 150),  # White
+    'z': (128, 128, 128)   # Gray
 }
 
 frame_width = int(cap.get(3))
@@ -71,19 +72,15 @@ while True:
     if not ret:
         print("End of video")
         break
-    
-    if ctr == frame_rate or first_loop:
-        average_color = np.mean(frame, axis=(0, 1)).astype(int)
 
-        closest_color = min(letter_color_dict, key=key_function)
+    for i in range(0, frame_height, pixel_scale):
+        for j in range(0, frame_width, pixel_scale):
+            pixel = frame[i:i+pixel_scale, j:j+pixel_scale, :]
+            average_color = np.mean(pixel, axis=(0, 1)).astype(int)
+            closest_color = min(letter_color_dict, key=lambda x: np.linalg.norm(np.array(letter_color_dict[x]) - average_color))
+            decoded_message += closest_color
 
-        decoded_message += closest_color
-
-        cv2.imshow('Video', frame)
-
-        ctr = 0
-        first_loop = False
-
+    cv2.imshow('Video', frame)
     if cv2.waitKey(25) & 0xFF == ord('q'):
         break
 
